@@ -1,0 +1,181 @@
+We introduce a model for provable data possession (PDP)
+that allows a client that has stored data at an untrusted
+server to verify that the server possesses the original data
+without retrieving it. The model generates probabilistic
+proofs of possession by sampling random sets of blocks from
+the server, which drastically reduces I/O costs. The client
+maintains a constant amount of metadata to verify the proof.
+The challenge/response protocol transmits a small, constant
+amount of data, which minimizes network communication.
+Thus, the PDP model for remote data checking supports
+large data sets in widely-distributed storage systems.
+We present two provably-secure PDP schemes that are
+more efficient than previous solutions, even when compared
+with schemes that achieve weaker guarantees. In particular,
+the overhead at the server is low (or even constant), as opposed to linear in the size of the data. Experiments using
+our implementation verify the practicality of PDP and reveal that the performance of PDP is bounded by disk I/O
+and not by cryptographic computation.
+Categories and Subject Descriptors
+H.3.2 [Information Storage and Retrieval]: Information Storage.; E.3 [Data Encryption]
+General Terms
+Security, Performance
+Keywords
+Provable data possession, PDP, homomorphic verifiable
+tags, archival storage, storage security
+?Department of Computer Science, Johns Hopkins
+University, Baltimore, MD 每 {ateniese, randal,
+crix}@cs.jhu.edu, jrh@jhu.edu, zachary@cs.jhu.edu
+?Google, Inc. 每 leak@cs.cmu.edu
+∫University of California Berkeley/Carnegie Mellon University 每 dawnsong@cs.berkeley.edu
+?An extended version of the paper is available as IACR
+ePrint report 2007/202 [3].
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for profit or commercial advantage and that copies
+bear this notice and the full citation on the first page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior specific
+permission and/or a fee.
+CCS＊07, October 29每November 2, 2007, Alexandria, Virginia, USA.
+Copyright 2007 ACM 978-1-59593-703-2/07/0011 ...$5.00.
+1. Introduction
+Verifying the authenticity of data has emerged as a critical
+issue in storing data on untrusted servers. It arises in peerto-peer storage systems [29, 35], network file systems [30,
+26], long-term archives [32], web-service object stores [48],
+and database systems [31]. Such systems prevent storage
+servers from misrepresenting or modifying data by providing
+authenticity checks when accessing data.
+However, archival storage requires guarantees about the
+authenticity of data on storage, namely that storage servers
+possess data. It is insufficient to detect that data have been
+modified or deleted when accessing the data, because it may
+be too late to recover lost or damaged data. Archival storage
+servers retain tremendous amounts of data, little of which
+are accessed. They also hold data for long periods of time
+during which there may be exposure to data loss from administration errors as the physical implementation of storage
+evolves, e.g., backup and restore, data migration to new systems, and changing memberships in peer-to-peer systems.
+Archival network storage presents unique performance demands. Given that file data are large and are stored at remote sites, accessing an entire file is expensive in I/O costs
+to the storage server and in transmitting the file across a network. Reading an entire archive, even periodically, greatly
+limits the scalability of network stores. (The growth in storage capacity has far outstripped the growth in storage access
+times and bandwidth [44]). Furthermore, I/O incurred to
+establish data possession interferes with on-demand bandwidth to store and retrieve data. We conclude that clients
+need to be able to verify that a server has retained file data
+without retrieving the data from the server and without having the server access the entire file.
+Previous solutions do not meet these requirements for
+proving data possession. Some schemes [20] provide a
+weaker guarantee by enforcing storage complexity: The
+server has to store an amount of data at least as large as
+the client＊s data, but not necessarily the same exact data.
+Moreover, all previous techniques require the server to access the entire file, which is not feasible when dealing with
+large amounts of data.
+We define a model for provable data possession (PDP)
+that provides probabilistic proof that a third party stores
+a file. The model is unique in that it allows the server to
+access small portions of the file in generating the proof; all
+other techniques must access the entire file. Within this
+model, we give the first provably-secure scheme for remote
+data checking. The client stores a small O(1) amount of
+metadata to verify the server＊s proof. Also, the scheme uses
+598O(1) bandwidth1. The challenge and the response are each
+slightly more than 1 Kilobit. We also present a more efficient
+version of this scheme that proves data possession using a
+single modular exponentiation at the server, even though it
+provides a weaker guarantee.
+Both schemes use homomorphic verifiable tags. Because
+of the homomorphic property, tags computed for multiple
+file blocks can be combined into a single value. The client
+pre-computes tags for each block of a file and then stores
+the file and its tags with a server. At a later time, the client
+can verify that the server possesses the file by generating
+a random challenge against a randomly selected set of file
+blocks. Using the queried blocks and their corresponding
+tags, the server generates a proof of possession. The client
+is thus convinced of data possession, without actually having
+to retrieve file blocks.
+The efficient PDP scheme is the fundamental construct
+underlying an archival introspection system that we are
+developing for the long-term preservation of Astronomy
+data. We are taking possession of multi-terabyte Astronomy databases at a University library in order to preserve
+the information long after the research projects and instruments used to collect the data are gone. The database will
+be replicated at multiple sites. Sites include resource-sharing
+partners that exchange storage capacity to achieve reliability and scale. As such, the system is subject to freeloading in which partners attempt to use storage resources and
+contribute none of their own [20]. The location and physical implementation of these replicas are managed independently by each partner and will evolve over time. Partners
+may even outsource storage to third-party storage server
+providers [23]. Efficient PDP schemes will ensure that the
+computational requirements of remote data checking do not
+unduly burden the remote storage sites.
+We implemented our more efficient scheme (E-PDP) and
+two other remote data checking protocols and evaluated
+their performance. Experiments show that probabilistic possession guarantees make it practical to verify possession of
+large data sets. With sampling, E-PDP verifies a 64MB file
+in about 0.4 seconds as compared to 1.8 seconds without
+sampling. Further, I/O bounds the performance of E-PDP;
+it generates proofs as quickly as the disk produces data. Finally, E-PDP is 185 times faster than the previous secure
+protocol on 768 KB files.
+Contributions. In this paper we:
+formally define protocols for provable data possession
+(PDP) that provide probabilistic proof that a third
+party stores a file.
+introduce the first provably-secure and practical PDP
+schemes that guarantee data possession.
+implement one of our PDP schemes and show experimentally that probabilistic possession guarantees make
+it practical to verify possession of large data sets.
+Our PDP schemes provide data format independence,
+which is a relevant feature in practical deployments (more
+details on this in the remarks of Section 4.3), and put no
+restriction on the number of times the client can challenge
+the server to prove data possession. Also, a variant of our
+1Storage overhead and network overhead are constant in the
+size of the file, but depend on the chosen security parameter.
+F client F'
+m
+client generates 
+metadata (m) and 
+modifed file (F')
+client store server store
+m F'
+input file
+no server 
+processing
+(a) Pre-process and store
+client
+m
+(1) client generates a 
+random challenge R
+client store server store
+m F'
+(3) client verifies 
+server's proof
+server
+(2) server computes 
+proof of possession P
+F'
+R
+0/1 P
+(b) Verify server possession
+Figure 1: Protocol for provable data possession.
+main PDP scheme offers public verifiability (described in
+Section 4.3).
+Paper Organization. The rest of the paper is organized as
+follows. In Section 2, we describe a framework for provable
+data possession, emphasizing the features and parameters
+that are relevant for PDP. Section 3 overviews related work.
+In Section 4, we introduce homomorphic verifiable tags, followed by definitions for PDP schemes and then we give our
+constructions (S-PDP and E-PDP). We support our theoretical claims with experiments that show the practicality
+of our schemes in Section 5 and conclude in Section 6.
+2. Provable Data Possession (PDP)
+We describe a framework for provable data possession.
+This provides background for related work and for the specific description of our schemes. A PDP protocol (Fig. 1)
+checks that an outsourced storage site retains a file, which
+consists of a collection of n blocks. The client C (data owner)
+pre-processes the file, generating a piece of metadata that
+is stored locally, transmits the file to the server S, and may
+delete its local copy. The server stores the file and responds
+to challenges issued by the client. Storage at the server is in
+?(n) and storage at the client is in O(1), conforming to our
+notion of an outsourced storage relationship.
+As part of pre-processing, the client may alter the file to
+be stored at the server. The client may expand the file or
+include additional metadata to be stored at the server. Before deleting its local copy of the file, the client may execute
+a data possession challenge to make sure the server has successfully stored the file. Clients may encrypt a file prior to
+out-sourcing the storage. For our purposes, encryption is
+an orthogonal issue; the ※file§ may consist of encrypted data
